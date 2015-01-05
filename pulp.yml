@@ -1,0 +1,6 @@
+---
+
+- name: Install pulp
+  hosts: all
+  roles:
+    - pulp

@@ -1,0 +1,45 @@
+---
+
+#RHEL7 Ansible Playbook to install a Pulp Master Server
+- name: Install deltarpm
+  yum: name=deltarpm state=present
+  
+- name: Install EPEL repo
+  yum: name=https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm state=present
+
+- name: Install Pulp repo
+  copy: src=rhel-pulp.repo dest=/etc/yum.repos.d/rhel-pulp.repo
+  
+- name: Update all rpms to latest
+  yum: name=* state=latest
+
+- name: Install All components
+  yum: name={{ item }} state=present
+  register: event
+  with_items:
+    - mongodb-server
+    - qpid-cpp-server 
+    - qpid-cpp-server-store
+    - "@pulp-server-qpid"
+    - "@pulp-admin"
+
+- name: Ensure auth=no in qpidd.conf
+  lineinfile: dest=/etc/qpid/qpidd.conf regexp="^auth=no" line="auth=no"
+    
+- name: Start the services
+  service: name={{ item }} state=started enabled=true
+  with_items:
+    - mongod
+    - qpidd
+    
+- name: initialize pulp db
+  shell: sudo -u apache pulp-manage-db
+  when: event.changed
+  
+- name: Start the rest of the services
+  service: name={{ item }} state=started enabled=true
+  with_items:
+    - httpd
+    - pulp_workers
+    - pulp_celerybeat
+    - pulp_resource_manager
