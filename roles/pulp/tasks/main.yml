@@ -5,7 +5,7 @@
   yum: name=deltarpm state=present
   
 - name: Install EPEL repo
-  yum: name=https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm state=present
+  yum: name=epel-release state=present
 
 - name: Install Pulp repo
   copy: src=rhel-pulp.repo dest=/etc/yum.repos.d/rhel-pulp.repo
@@ -22,9 +22,18 @@
     - qpid-cpp-server-store
     - "@pulp-server-qpid"
     - "@pulp-admin"
+    - python-crane
+    - pulp-docker-plugins
+    - pulp-docker-admin-extensions
 
 - name: Ensure auth=no in qpidd.conf
   lineinfile: dest=/etc/qpid/qpidd.conf regexp="^auth=no" line="auth=no"
+
+- name: Copy over pulp_docker.conf
+  copy: src=pulp_docker.conf dest=/etc/httpd/conf.d/pulp_docker.conf
+
+- name: Copy over rpm.conf
+  copy: src=rpm.conf dest=/etc/pulp/vhosts80/rpm.conf
     
 - name: Start the services
   service: name={{ item }} state=started enabled=true
