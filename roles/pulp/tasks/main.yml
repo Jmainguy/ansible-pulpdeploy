@@ -29,6 +29,9 @@
 - name: Ensure auth=no in qpidd.conf
   lineinfile: dest=/etc/qpid/qpidd.conf regexp="^auth=no" line="auth=no"
 
+- name: Copy over crane.conf
+  copy: src=crane.conf  dest=/etc/crane.conf
+
 - name: Copy over pulp_docker.conf
   copy: src=pulp_docker.conf dest=/etc/httpd/conf.d/pulp_docker.conf
 
